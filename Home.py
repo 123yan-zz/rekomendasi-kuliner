@@ -23,7 +23,7 @@ st.markdown(f"""
         background-position: center;
         padding: 100px 20px;
         border-radius: 20px;
-        height: 420px;
+        height: 500px;
         color: white;
         text-align: left;
     }}
