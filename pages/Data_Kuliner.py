@@ -9,7 +9,7 @@ st.title("📍 Kuliner Karanganyar")
 col1, col2, col3 = st.columns ([1,1,1])
 with col1:
     if st.button("🏠 Beranda"):
-        st.switch_page("home.py")
+        st.switch_page("Home.py")
 with col2:
     if st.button("📍 Lihat Data Kuliner"):
         st.switch_page("pages/Data_Kuliner.py")
