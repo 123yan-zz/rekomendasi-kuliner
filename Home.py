@@ -21,7 +21,7 @@ st.markdown(f"""
         background-image: url("data:image/jpg;base64,{img_base64}");
         background-size: cover;
         background-position: center;
-        padding: 100px 50px;
+        padding: 100px 15px;
         border-radius: 20px;
         height: 500px;
         color: white;
