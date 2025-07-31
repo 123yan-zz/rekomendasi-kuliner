@@ -18,7 +18,8 @@ img_base64 = get_base64_of_bin_file(img_path)
 st.markdown(f"""
     <style>
     .header-box {{
-        background-image: url("data:image/jpg;base64,{img_base64}");
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url("data:image/jpg;base64,{img_base64}");
         background-size: cover;
         background-position: center;
         padding: 60px 20px;
