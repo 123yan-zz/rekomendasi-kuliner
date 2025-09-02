@@ -2,10 +2,12 @@ import streamlit as st
 import os
 import base64
 
+#konfigurasi awal 
 st.set_page_config(page_title="🏠 Kuliner Karanganyar", layout="wide")
+#judul sistem
 st.markdown("## 🔍Sistem Rekomendasi Kuliner Karanganyar")
 
-# Memuat gambar sebagai background
+# Fungsi Untuk Menampilkan gambar yang ada di dashboard
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
@@ -14,7 +16,7 @@ def get_base64_of_bin_file(bin_file):
 img_path = 'foto/cover (1).jpg'
 img_base64 = get_base64_of_bin_file(img_path)
 
-# Styling CSS responsive
+# CSS Untuk Mengatur Dashboard
 st.markdown(f"""
     <style>
     .header-box {{
@@ -64,13 +66,14 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# Header Box dengan link
+# Header Box yang ditampilkan didalam dashboard
 st.markdown(f"""
 <div class="header-box">
     <h1>🍜 Wisata Kuliner Karanganyar</h1>
     <p>Sistem Rekomendasi Kuliner Karanganyar berbasis website yang dapat digunakan sebagai
        preferensi untuk mencoba kuliner yang ada di Karanganyar.<br>
-       Sistem rekomendasi ini berdasarkan menu spesial, rating, dan ulasan dari pengguna lain.</p>
+       Sistem rekomendasi ini berdasarkan menu spesial, rating, dan ulasan dari pengguna lain.<br>
+        Jelajahi kuliner Karanganyar berdasarkan Menu Spesial </p>
     <div class="button-container">
         <a href='/Data_Kuliner' target='_self' class="button-custom">📍 Lihat Data Kuliner</a>
         <a href='/Rekomendasi' target='_self' class="button-custom">🍽️ Lihat Rekomendasi Kuliner</a>
