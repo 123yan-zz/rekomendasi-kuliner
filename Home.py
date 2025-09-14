@@ -199,63 +199,67 @@ elif st.session_state.role == "Pengguna":
         st.subheader("🤖 Rekomendasi Kuliner")
         st.info("Masukkan menu spesial untuk mendapatkan rekomendasi yang relevan.")
 
-
     # --- Normalisasi kolom Menu_Spesial ---
-    df['Menu_Spesial'] = df['Menu_Spesial'].fillna('')
-    # --- Ambil daftar keyword dari data ---
-    keyword_set = set()
-    for menu_item in df['Menu_Spesial']:
-        for item in menu_item.split(","):
-            kata = item.strip()
-            if kata:
-                keyword_set.add(kata)
-    sorted_keywords = sorted(keyword_set)
+        df['Menu_Spesial'] = df['Menu_Spesial'].fillna('')
+
+    # --- Ambil daftar keyword dari data (asli dari Excel) ---
+        keyword_set = set()
+        for menu_item in df['Menu_Spesial']:
+            for item in menu_item.split(","):
+                kata_asli = item.strip()
+                if kata_asli:
+                    keyword_set.add(kata_asli)
+
+        sorted_keywords = sorted(keyword_set)
 
     # --- Input dari pengguna ---
-    options = ["📌 Masukkan menu spesial..."] + sorted_keywords
-    menu_input = st.selectbox("🍜 Masukkan menu spesial:", options)
-    submit = st.button("🔍 Cari Rekomendasi")
+        options = ["📌 Masukkan menu spesial..."] + sorted_keywords
+        menu_input = st.selectbox("🍜 Masukkan menu spesial:", options)
+        submit = st.button("🔍 Cari Rekomendasi")
 
     # --- Proses rekomendasi ---
-    if submit and menu_input != "📌 Masukkan menu spesial...":
-        semua_menu = df['Menu_Spesial'].tolist() + [menu_input]
-        vectorizer = CountVectorizer().fit_transform(semua_menu)
-        cosine_sim = cosine_similarity(vectorizer)
-        hasil_cosine_sim = cosine_sim[-1][:-1]
-        df["cosine"] = hasil_cosine_sim
+        if submit and menu_input != "📌 Masukkan menu spesial...":
+        # Gunakan lowercase hanya untuk perhitungan cosine & pencarian
+            menu_lower = menu_input.lower()
 
-        # normalisasi rating
-        normalisasi_rating = (df['Rating'] - df['Rating'].min()) / (df['Rating'].max() - df['Rating'].min())
-        df["norm_rating"] = normalisasi_rating
+            semua_menu = df['Menu_Spesial'].tolist() + [menu_lower]
+            vectorizer = CountVectorizer().fit_transform([m.lower() for m in semua_menu])
+            cosine_sim = cosine_similarity(vectorizer)
+            hasil_cosine_sim = cosine_sim[-1][:-1]
+            df["cosine"] = hasil_cosine_sim
 
-        # collaborative score
-        df["Hasil_CF_Pembilang"] = hasil_cosine_sim * normalisasi_rating * df["Ulasan"]
-        df["Hasil_CF_Penyebut"] = hasil_cosine_sim * df["Ulasan"]
-        collaborative_score = df["Hasil_CF_Pembilang"] / df["Hasil_CF_Penyebut"]
-        collaborative_score = collaborative_score.fillna(0)
+        # Normalisasi rating
+            normalisasi_rating = (df['Rating'] - df['Rating'].min()) / (df['Rating'].max() - df['Rating'].min())
+            df["norm_rating"] = normalisasi_rating
 
-        # skor hybrid
-        df["Skor Hybrid"] = 0.6 * hasil_cosine_sim + 0.4 * collaborative_score
+        # Collaborative score
+            df["Hasil_CF_Pembilang"] = hasil_cosine_sim * normalisasi_rating * df["Ulasan"]
+            df["Hasil_CF_Penyebut"] = hasil_cosine_sim * df["Ulasan"]
+            collaborative_score = df["Hasil_CF_Pembilang"] / df["Hasil_CF_Penyebut"]
+            collaborative_score = collaborative_score.fillna(0)
 
-        # rekomendasi relevan
-        rekomendasi_relevan = df[df['Menu_Spesial'].str.contains(menu_input, case=False, na=False)].copy()
-        rekomendasi_relevan = rekomendasi_relevan[rekomendasi_relevan["Skor Hybrid"] > 0]
-        rekomendasi_relevan = rekomendasi_relevan.sort_values(
+        # Skor Hybrid
+            df["Skor Hybrid"] = 0.6 * hasil_cosine_sim + 0.4 * collaborative_score
+
+        # Rekomendasi relevan (case-insensitive, tapi tampil tetap sesuai Excel)
+            rekomendasi_relevan = df[df['Menu_Spesial'].str.lower().str.contains(menu_lower, na=False)].copy()
+            rekomendasi_relevan = rekomendasi_relevan[rekomendasi_relevan["Skor Hybrid"] > 0]
+            rekomendasi_relevan = rekomendasi_relevan.sort_values(
             by=["Skor Hybrid", "Rating", "Ulasan"], ascending=[False, False, False]
-        )
+            )
 
-        # rekomendasi lain
-        rekomendasi_lain = df[~df['Menu_Spesial'].str.contains(menu_input, case=False, na=False)].copy()
-        rekomendasi_lain = rekomendasi_lain[
+        # Rekomendasi lain
+            rekomendasi_lain = df[~df['Menu_Spesial'].str.lower().str.contains(menu_lower, na=False)].copy()
+            rekomendasi_lain = rekomendasi_lain[
             (rekomendasi_lain["Skor Hybrid"] > 0.5) & (rekomendasi_lain["Rating"] > 4.0)
-        ]
-        rekomendasi_lain = rekomendasi_lain.sort_values(by="Skor Hybrid", ascending=False)
+            ]
+            rekomendasi_lain = rekomendasi_lain.sort_values(by="Skor Hybrid", ascending=False)
 
-        # tampilkan hasil rekomendasi relevan
-        if rekomendasi_relevan.empty:
-            st.warning(f"❌ Tidak ada tempat dengan menu spesial '{menu_input}'")
-        else:
-            st.subheader(f"📍 Rekomendasi Utama: {menu_input}")
+        # --- Tampilkan hasil ---
+            if rekomendasi_relevan.empty:
+                st.warning(f"❌ Tidak ada tempat dengan menu spesial '{menu_input}'")
+            else:
+                st.subheader(f"📍 Rekomendasi Utama: {menu_input}")
             for _, row in rekomendasi_relevan.iterrows():
                 col1, col2 = st.columns([1, 3])
                 with col1:
@@ -264,15 +268,14 @@ elif st.session_state.role == "Pengguna":
                         st.image(img_path, use_container_width=True)
                 with col2:
                     st.markdown(f"### {row['Nama_Tempat']}")
-                    st.markdown(f"🍽️ {row['Menu_Spesial']}")
+                    st.markdown(f"🍽️ {row['Menu_Spesial']}")  # tampil sesuai Excel
                     st.markdown(f"⭐ {row['Rating']} ({row['Ulasan']} ulasan)")
                     st.markdown(f"🕒 {row['Jam_Buka']}")
                     st.markdown(f"[📍 Lihat Lokasi]({row['Alamat']})", unsafe_allow_html=True)
                 st.markdown("---")
 
-        # tampilkan hasil rekomendasi lain
-        if not rekomendasi_lain.empty:
-            st.subheader("🔍 Rekomendasi Lain yang Mungkin Cocok:")
+            if not rekomendasi_lain.empty:
+                st.subheader("🔍 Rekomendasi Lain yang Mungkin Cocok:")
             for _, row in rekomendasi_lain.iterrows():
                 col1, col2 = st.columns([1, 3])
                 with col1:
@@ -281,7 +284,7 @@ elif st.session_state.role == "Pengguna":
                         st.image(img_path, use_container_width=True)
                 with col2:
                     st.markdown(f"### {row['Nama_Tempat']}")
-                    st.markdown(f"🍽️ {row['Menu_Spesial']}")
+                    st.markdown(f"🍽️ {row['Menu_Spesial']}")  # tetap sesuai Excel
                     st.markdown(f"⭐ {row['Rating']} ({row['Ulasan']} ulasan)")
                     st.markdown(f"🕒 {row['Jam_Buka']}")
                     st.markdown(f"[📍 Lihat Lokasi]({row['Alamat']})", unsafe_allow_html=True)
