@@ -200,19 +200,22 @@ elif st.session_state.role == "Pengguna":
         st.info("Masukkan menu spesial untuk mendapatkan rekomendasi yang relevan.")
 
     # --- Ambil daftar keyword dari data ---
-        df['Menu_Spesial'] = df['Menu_Spesial'].fillna('')
-        keyword_set = set()
+    df['Menu_Spesial'] = df['Menu_Spesial'].fillna('').str.strip().str.lower()
+
+    keyword_set = set()
         for menu_item in df['Menu_Spesial']:
-            for item in menu_item.split(","):
-                kata = item.strip()
-            if kata:
-                keyword_set.add(kata)
+        for item in menu_item.split(","):
+        kata = item.strip()
+        if kata:
+            keyword_set.add(kata)
+
         sorted_keywords = sorted(keyword_set)
 
-    # --- Input dari pengguna ---
+        # --- Input dari pengguna ---
         options = ["📌 Masukkan menu spesial..."] + sorted_keywords
-        menu_input = st.selectbox("🍜 masukkan menu spesial:", options)
+        menu_input = st.selectbox("🍜 masukkan menu spesial:", options).lower()
         submit = st.button("🔍 Cari Rekomendasi")
+
 
         # --- Proses rekomendasi ---
         if submit and menu_input != "📌 Masukkan menu spesial...":
@@ -459,6 +462,7 @@ elif st.session_state.role == "Admin":
     if st.sidebar.button("🔙 Keluar"):
         st.session_state.role = None
         st.rerun()
+
 
 
 
