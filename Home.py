@@ -202,7 +202,7 @@ elif st.session_state.role == "Pengguna":
     # --- Ambil daftar keyword dari data ---
     df['Menu_Spesial'] = df['Menu_Spesial'].fillna('').str.strip().str.lower()
 
-    keyword_set = set()
+        keyword_set = set()
         for menu_item in df['Menu_Spesial']:
         for item in menu_item.split(","):
         kata = item.strip()
@@ -462,6 +462,7 @@ elif st.session_state.role == "Admin":
     if st.sidebar.button("🔙 Keluar"):
         st.session_state.role = None
         st.rerun()
+
 
 
 
