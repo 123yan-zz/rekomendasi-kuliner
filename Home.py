@@ -9,7 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 # ============= CONFIGURASI =============
 st.set_page_config(page_title="📍 Wisata Kuliner Karanganyar", layout="wide")
 
-kuliner_file = "data1/kec.kra kuliner.xlsx"
+kuliner_file = "data/kec.kra kuliner.xlsx"
 
 # Cek file data
 try:
@@ -465,3 +465,4 @@ elif st.session_state.role == "Admin":
     if st.sidebar.button("🔙 Keluar"):
         st.session_state.role = None
         st.rerun()
+
