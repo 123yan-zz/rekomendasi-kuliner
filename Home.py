@@ -24,17 +24,6 @@ akun_admin_file = "data/admin_accounts.xlsx"
 if not os.path.exists("data"):
     os.makedirs("data")
 
-# Akun default (selalu ada minimal 1 akun)
-DEFAULT_ACCOUNTS = pd.DataFrame([["admin", "123"]], columns=["Username", "Password"])
-
-# Kalau file akun belum ada → buat baru dengan akun default
-if not os.path.exists(akun_admin_file):
-    DEFAULT_ACCOUNTS.to_excel(akun_admin_file, index=False)
-else:
-    df_admin = pd.read_excel(akun_admin_file)
-    if df_admin.empty:
-        DEFAULT_ACCOUNTS.to_excel(akun_admin_file, index=False)
-
 # === Inisialisasi session state ===
 if "role" not in st.session_state:
     st.session_state.role = None
@@ -476,6 +465,7 @@ elif st.session_state.role == "Admin":
     if st.sidebar.button("🔙 Keluar"):
         st.session_state.role = None
         st.rerun()
+
 
 
 
