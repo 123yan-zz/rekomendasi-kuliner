@@ -9,16 +9,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 # ============= CONFIGURASI =============
 st.set_page_config(page_title="📍 Wisata Kuliner Karanganyar", layout="wide")
 
-kuliner_file = "data/kec.kra kuliner.xlsx"
+kuliner_file = "data1/kec.kra kuliner.xlsx"
 
-# Cek file data
+# Cek file data kuliner
 try:
     df = pd.read_excel(kuliner_file, engine="openpyxl")
 except:
     df = pd.DataFrame(columns=['No','Nama_Tempat','Menu_Spesial','Rating','Ulasan','Jam_Buka','Alamat','Gambar'])
-
-if "role" not in st.session_state:
-    st.session_state.role = None
 
 # === File akun admin ===
 akun_admin_file = "data/admin_accounts.xlsx"
@@ -27,13 +24,27 @@ akun_admin_file = "data/admin_accounts.xlsx"
 if not os.path.exists("data"):
     os.makedirs("data")
 
-# Inisialisasi file Excel kosong jika belum ada
+# Akun default (selalu ada minimal 1 akun)
+DEFAULT_ACCOUNTS = pd.DataFrame([["admin", "123"]], columns=["Username", "Password"])
+
+# Kalau file akun belum ada → buat baru dengan akun default
 if not os.path.exists(akun_admin_file):
-    pd.DataFrame(columns=["Username", "Password"]).to_excel(akun_admin_file, index=False)
+    DEFAULT_ACCOUNTS.to_excel(akun_admin_file, index=False)
+else:
+    df_admin = pd.read_excel(akun_admin_file)
+    if df_admin.empty:
+        DEFAULT_ACCOUNTS.to_excel(akun_admin_file, index=False)
 
 # === Inisialisasi session state ===
 if "role" not in st.session_state:
     st.session_state.role = None
+
+# Fungsi untuk cek login
+def check_login(username, password):
+    df_admin = pd.read_excel(akun_admin_file)
+    if ((df_admin["Username"] == username) & (df_admin["Password"] == password)).any():
+        return True
+    return False
 
 # ============= LOGIN PAGE =============
 if st.session_state.role is None:
@@ -60,8 +71,7 @@ if st.session_state.role is None:
             username = st.text_input("Username Admin", key="login_admin_user")
             password = st.text_input("Password Admin", type="password", key="login_admin_pass")
             if st.button("Login Admin"):
-                df = pd.read_excel(akun_admin_file)
-                if ((df["Username"] == username) & (df["Password"] == password)).any():
+                if check_login(username, password):
                     st.session_state.role = "Admin"
                     st.success("✅ Login berhasil sebagai Admin")
                     st.rerun()
@@ -74,16 +84,17 @@ if st.session_state.role is None:
             new_pass = st.text_input("Buat Password Admin", type="password", key="reg_admin_pass")
             if st.button("Daftar Admin"):
                 if new_admin and new_pass:
-                    df = pd.read_excel(akun_admin_file)
-                    if new_admin in df["Username"].values:
+                    df_admin = pd.read_excel(akun_admin_file)
+                    if new_admin in df_admin["Username"].values:
                         st.warning("⚠️ Username Admin sudah ada, silakan pilih yang lain.")
                     else:
                         new_row = pd.DataFrame([[new_admin, new_pass]], columns=["Username", "Password"])
-                        df = pd.concat([df, new_row], ignore_index=True)
-                        df.to_excel(akun_admin_file, index=False)
+                        df_admin = pd.concat([df_admin, new_row], ignore_index=True)
+                        df_admin.to_excel(akun_admin_file, index=False)
                         st.success("✅ Registrasi Admin berhasil! Silakan login.")
                 else:
                     st.error("❌ Username dan Password tidak boleh kosong.")
+
 
 # ============= MENU PENGGUNA =============
 elif st.session_state.role == "Pengguna":
@@ -465,4 +476,5 @@ elif st.session_state.role == "Admin":
     if st.sidebar.button("🔙 Keluar"):
         st.session_state.role = None
         st.rerun()
+
 
