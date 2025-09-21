@@ -84,17 +84,17 @@ if st.session_state.role is None:
             new_pass = st.text_input("Buat Password Admin", type="password", key="reg_admin_pass")
             if st.button("Daftar Admin"):
                 if new_admin and new_pass:
-                    df_admin = pd.read_excel(akun_admin_file)
-                    if new_admin in df_admin["Username"].values:
-                        st.warning("⚠️ Username Admin sudah ada, silakan pilih yang lain.")
-                    else:
-                        new_row = pd.DataFrame([[new_admin, new_pass]], columns=["Username", "Password"])
-                        df_admin = pd.concat([df_admin, new_row], ignore_index=True)
-                        df_admin.to_excel(akun_admin_file, index=False)
-                        st.success("✅ Registrasi Admin berhasil! Silakan login.")
+                df_admin = pd.read_excel(akun_admin_file, dtype=str, engine="openpyxl")
+                if new_admin in df_admin["Username"].values:
+                st.warning("⚠️ Username Admin sudah ada, silakan pilih yang lain.")
                 else:
-                    st.error("❌ Username dan Password tidak boleh kosong.")
-
+                new_row = pd.DataFrame([[new_admin, new_pass]], columns=["Username", "Password"])
+                df_admin = pd.concat([df_admin, new_row], ignore_index=True)
+                df_admin.to_excel(akun_admin_file, index=False, engine="openpyxl")
+                st.success("✅ Registrasi Admin berhasil! Silakan login.")
+                st.write("📂 Data admin terbaru:", df_admin)  # debug
+            else:
+            st.error("❌ Username dan Password tidak boleh kosong.")
 
 # ============= MENU PENGGUNA =============
 elif st.session_state.role == "Pengguna":
@@ -476,6 +476,7 @@ elif st.session_state.role == "Admin":
     if st.sidebar.button("🔙 Keluar"):
         st.session_state.role = None
         st.rerun()
+
 
 
 
